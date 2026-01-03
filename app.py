@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import time
-from datetime import datetime
 from streamlit_lightweight_charts import renderLightweightCharts
 
 st.set_page_config(layout="wide")
@@ -10,14 +9,13 @@ st.title("🕯️ Mon TradingView (Moteur Lightweight)")
 
 # --- 1. Gestion des données (Simulées) ---
 if "data_list" not in st.session_state:
-    # On initialise avec 50 bougies
     initial_price = 100.0
     data = []
     # On force un timestamp entier (int)
     current_time = int(time.time()) - 50*60 
     
     for i in range(50):
-        open_p = float(initial_price) # Conversion explicite en float Python
+        open_p = float(initial_price)
         close_p = float(open_p + np.random.uniform(-1, 1))
         high_p = float(max(open_p, close_p) + np.random.uniform(0, 0.5))
         low_p = float(min(open_p, close_p) - np.random.uniform(0, 0.5))
@@ -98,12 +96,11 @@ def draw_chart():
     last_price = st.session_state.data_list[-1]["close"]
     st.metric(label="Live Price", value=f"{last_price:.2f}")
 
-    # CORRECTION ICI : Arguments positionnels uniquement
-    # L'ordre est important : (options, series) ou l'inverse selon la version de la lib.
-    # Pour la plupart des versions courantes de cette lib, c'est :
+    # FIX: On ajoute 'key' pour stabiliser le composant
     renderLightweightCharts(
-        seriesCandlestickChart, # 1. Les données
-        chartOptions            # 2. Les options globales
+        series=seriesCandlestickChart, 
+        options=chartOptions,
+        key="live_chart"
     )
 
 draw_chart()
