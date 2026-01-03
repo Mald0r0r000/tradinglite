@@ -79,27 +79,34 @@ chartOptions = {
 def draw_chart():
     update_data() 
     
-    seriesCandlestickChart = [
+    # FIX: Structure correcte pour renderLightweightCharts
+    # Le paramètre est 'charts' (liste de dictionnaires de graphiques)
+    # Chaque graphique contient 'chart' (options) et 'series' (séries de données)
+    charts = [
         {
-            "type": 'Candlestick',
-            "data": st.session_state.data_list,
-            "options": {
-                "upColor": '#26a69a',
-                "downColor": '#ef5350',
-                "borderVisible": False,
-                "wickUpColor": '#26a69a',
-                "wickDownColor": '#ef5350'
-            }
+            "chart": chartOptions,
+            "series": [
+                {
+                    "type": 'Candlestick',
+                    "data": st.session_state.data_list,
+                    "options": {
+                        "upColor": '#26a69a',
+                        "downColor": '#ef5350',
+                        "borderVisible": False,
+                        "wickUpColor": '#26a69a',
+                        "wickDownColor": '#ef5350'
+                    }
+                }
+            ]
         }
     ]
     
     last_price = st.session_state.data_list[-1]["close"]
     st.metric(label="Live Price", value=f"{last_price:.2f}")
 
-    # FIX: On ajoute 'key' pour stabiliser le composant
+    # Utilisation correcte de l'API
     renderLightweightCharts(
-        series=seriesCandlestickChart, 
-        options=chartOptions,
+        charts=charts,
         key="live_chart"
     )
 
