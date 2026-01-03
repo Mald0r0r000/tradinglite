@@ -86,8 +86,7 @@ chartOptions = {
 }
 
 # --- 3. Boucle de rendu ---
-# Utilisation de st.fragment pour ne recharger que cette partie (Streamlit 1.37+)
-@st.fragment(run_every=2) # Mise à jour toutes les 2 secondes
+@st.fragment(run_every=2)
 def draw_chart():
     update_data() # Génère la nouvelle donnée
     
@@ -97,8 +96,8 @@ def draw_chart():
             "type": 'Candlestick',
             "data": st.session_state.data_list,
             "options": {
-                "upColor": '#26a69a',      # Le vert TradingView
-                "downColor": '#ef5350',    # Le rouge TradingView
+                "upColor": '#26a69a',
+                "downColor": '#ef5350',
                 "borderVisible": False,
                 "wickUpColor": '#26a69a',
                 "wickDownColor": '#ef5350'
@@ -110,10 +109,9 @@ def draw_chart():
     last_price = st.session_state.data_list[-1]["close"]
     st.metric(label="Live Price", value=f"{last_price:.2f}")
 
-    # Rendu du graphique
-    # La clé est la data_list : si elle change, le chart se met à jour
+    # Rendu du graphique (CORRIGÉ)
     renderLightweightCharts(
-        options=chartOptions, 
+        chartOptions=chartOptions, 
         series=seriesCandlestickChart, 
         height=500
     )
