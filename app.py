@@ -3,7 +3,6 @@ import pandas as pd
 import numpy as np
 import time
 from datetime import datetime
-# Import de la lib spécifique
 from streamlit_lightweight_charts import renderLightweightCharts
 
 st.set_page_config(layout="wide")
@@ -12,19 +11,19 @@ st.title("🕯️ Mon TradingView (Moteur Lightweight)")
 # --- 1. Gestion des données (Simulées) ---
 if "data_list" not in st.session_state:
     # On initialise avec 50 bougies
-    initial_price = 100
+    initial_price = 100.0
     data = []
-    current_time = int(time.time()) - 50*60 # Commencer il y a 50 min
+    # On force un timestamp entier (int)
+    current_time = int(time.time()) - 50*60 
     
     for i in range(50):
-        open_p = initial_price
-        close_p = open_p + np.random.uniform(-1, 1)
-        high_p = max(open_p, close_p) + np.random.uniform(0, 0.5)
-        low_p = min(open_p, close_p) - np.random.uniform(0, 0.5)
+        open_p = float(initial_price) # Conversion explicite en float Python
+        close_p = float(open_p + np.random.uniform(-1, 1))
+        high_p = float(max(open_p, close_p) + np.random.uniform(0, 0.5))
+        low_p = float(min(open_p, close_p) - np.random.uniform(0, 0.5))
         
-        # Format spécifique exigé par Lightweight Charts
         candle = {
-            "time": current_time + (i * 60), # Timestamp UNIX
+            "time": int(current_time + (i * 60)), 
             "open": open_p,
             "high": high_p,
             "low": low_p,
@@ -38,13 +37,13 @@ if "data_list" not in st.session_state:
 # Fonction pour ajouter une bougie
 def update_data():
     last_candle = st.session_state.data_list[-1]
-    new_time = last_candle["time"] + 60
-    prev_close = last_candle["close"]
+    new_time = int(last_candle["time"] + 60)
+    prev_close = float(last_candle["close"])
     
     change = np.random.uniform(-1, 1)
-    new_close = prev_close + change
-    new_high = max(prev_close, new_close) + np.random.uniform(0, 0.5)
-    new_low = min(prev_close, new_close) - np.random.uniform(0, 0.5)
+    new_close = float(prev_close + change)
+    new_high = float(max(prev_close, new_close) + np.random.uniform(0, 0.5))
+    new_low = float(min(prev_close, new_close) - np.random.uniform(0, 0.5))
     
     new_candle = {
         "time": new_time,
@@ -55,11 +54,10 @@ def update_data():
     }
     
     st.session_state.data_list.append(new_candle)
-    # On garde l'historique propre (ex: 100 dernières)
     if len(st.session_state.data_list) > 100:
         st.session_state.data_list.pop(0)
 
-# --- 2. Configuration du Graphique (Le JSON de config) ---
+# --- 2. Configuration du Graphique ---
 chartOptions = {
     "layout": {
         "textColor": 'black',
@@ -72,14 +70,7 @@ chartOptions = {
         "vertLines": {"color": "rgba(197, 203, 206, 0.5)"},
         "horzLines": {"color": "rgba(197, 203, 206, 0.5)"}
     },
-    "crosshair": {
-        "mode": 0 # Mode normal
-    },
-    "priceScale": {
-        "borderColor": "rgba(197, 203, 206, 0.8)"
-    },
     "timeScale": {
-        "borderColor": "rgba(197, 203, 206, 0.8)",
         "timeVisible": True,
         "secondsVisible": False
     }
@@ -88,9 +79,8 @@ chartOptions = {
 # --- 3. Boucle de rendu ---
 @st.fragment(run_every=2)
 def draw_chart():
-    update_data() # Génère la nouvelle donnée
+    update_data() 
     
-    # Préparation de la série de données
     seriesCandlestickChart = [
         {
             "type": 'Candlestick',
@@ -105,16 +95,15 @@ def draw_chart():
         }
     ]
     
-    # Affichage du prix actuel
     last_price = st.session_state.data_list[-1]["close"]
     st.metric(label="Live Price", value=f"{last_price:.2f}")
 
-    # Rendu du graphique (CORRIGÉ)
+    # CORRECTION ICI : Arguments positionnels uniquement
+    # L'ordre est important : (options, series) ou l'inverse selon la version de la lib.
+    # Pour la plupart des versions courantes de cette lib, c'est :
     renderLightweightCharts(
-        chartOptions=chartOptions, 
-        series=seriesCandlestickChart, 
-        height=500
+        seriesCandlestickChart, # 1. Les données
+        chartOptions            # 2. Les options globales
     )
 
-# Appel de la fonction fragment
 draw_chart()
